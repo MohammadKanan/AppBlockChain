@@ -1,46 +1,62 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(AppBlockchain LANGUAGES CXX)
+project(BC_Wallet_Qt VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(OpenSSL REQUIRED)
 if(OPENSSL_FOUND)
 message("openSSL:"  ${OpenSSL_LIBRARIES} "OpenSSL found: Version ${OPENSSL_VERSION}")
 else()
 message("openSSL not found!")
 endif()
-set (PROJECT_HEADERS
-    src/Transaction.h
-    src/main.cpp
-    src/Blockchain.h
+set (Project_Headers
     src/Block.h
+    src/Blockchain.h
+    src/Transaction.h
+    src/Wallet.h
 )
-set(PROJECT_SOURCES
-        src/main.cpp
-        src/Wallet.cpp
-        src/Transaction.cpp
-        src/Blockchain.cpp
-        src/Block.cpp
+set (Project_Sources
+    main.cpp
+    src/Block.cpp
+    src/Blockchain.cpp
+    src/Transaction.cpp
+    src/Wallet.cpp
+)
+qt_add_executable(appBC_Wallet_Qt
+    ${Project_Headers}
+    ${Project_Sources}
 )
 
-add_executable(${PROJECT_NAME}
-    ${PROJECT_HEADERS}
-    ${PROJECT_SOURCES}
+qt_add_qml_module(appBC_Wallet_Qt
+    URI BC_Wallet_Qt
+    VERSION 1.0
+    QML_FILES
+        Main.qml
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Core crypto ${OpenSSL_LIBRARIES})
+# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
+# If you are developing for iOS or macOS you should consider setting an
+# explicit, fixed bundle identifier manually though.
+set_target_properties(appBC_Wallet_Qt PROPERTIES
+#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appBC_Wallet_Qt
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE TRUE
+    WIN32_EXECUTABLE TRUE
+)
+
+target_link_libraries(appBC_Wallet_Qt
+    PRIVATE Qt6::Quick
+    crypto
+    ${OpenSSL_LIBRARIES}
+)
 
 include(GNUInstallDirs)
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS appBC_Wallet_Qt
+    BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

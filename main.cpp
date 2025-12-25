@@ -1,9 +1,26 @@
 #include <iostream>
 #include <vector>
-#include "Blockchain.h"
-#include "Wallet.h"
+#include "src/Blockchain.h"
+#include "src/Wallet.h"
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
 
-int main() {
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
+
+    QQmlApplicationEngine engine;
+    const QUrl url(QStringLiteral("qrc:/BC_Wallet_Qt/Main.qml"));
+    QObject::connect(
+        &engine,
+        &QQmlApplicationEngine::objectCreated,
+        &app,
+        [url](QObject *obj, const QUrl &objUrl) {
+            if (!obj && url == objUrl)
+                QCoreApplication::exit(-1);
+        },
+        Qt::QueuedConnection);
+    // bc
     Blockchain myBlockchain;
     std::vector<Wallet*> wallets;
 
@@ -44,6 +61,8 @@ int main() {
         //wallet->printWalletData();
         std::cout << "Wallet " << wallet->id << " has balance: " << wallet->balance << std::endl;
     }
+    //
+    engine.load(url);
 
-    return 0;
+    return app.exec();
 }
