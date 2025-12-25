@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(BC_Wallet_Qt VERSION 0.1 LANGUAGES CXX)
-
+set (Project_Executable appBC_Wallet_Qt)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -12,6 +12,8 @@ message( "OpenSSL found: Version ${OPENSSL_VERSION}")
 else()
 message("openSSL not found!")
 endif()
+qt_policy(SET QTP0001 OLD)
+#qt_standard_project_setup(REQUIRES 6.5)
 set (Project_Headers
     src/Block.h
     src/Blockchain.h
@@ -25,13 +27,13 @@ set (Project_Sources
     src/Transaction.cpp
     src/Wallet.cpp
 )
-qt_add_executable(appBC_Wallet_Qt
+qt_add_executable(${Project_Executable}
     ${Project_Headers}
     ${Project_Sources}
 )
 
-qt_add_qml_module(appBC_Wallet_Qt
-    URI BC_Wallet_Qt
+qt_add_qml_module(${Project_Executable}
+    URI ${PROJECT_NAME}
     VERSION 1.0
     QML_FILES
         Main.qml
@@ -40,7 +42,7 @@ qt_add_qml_module(appBC_Wallet_Qt
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
-set_target_properties(appBC_Wallet_Qt PROPERTIES
+set_target_properties(${Project_Executable} PROPERTIES
 #    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appBC_Wallet_Qt
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -48,14 +50,13 @@ set_target_properties(appBC_Wallet_Qt PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-target_link_libraries(appBC_Wallet_Qt
+target_link_libraries(${Project_Executable}
     PRIVATE Qt6::Quick
-    #crypto
     ${OPENSSL_LIBRARIES}
 )
 
 include(GNUInstallDirs)
-install(TARGETS appBC_Wallet_Qt
+install(TARGETS ${Project_Executable}
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
