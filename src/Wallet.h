@@ -19,6 +19,8 @@ public:
 
     // Method to print wallet details
     void printWalletData() const;
+    std::string theID();
+    RSA* getPublicKey();
 
     std::string id; // Wallet ID
     float balance; // Wallet balance
@@ -27,6 +29,9 @@ public:
 private:
     RSA* privateKey;  // Private key for signing transactions
     void generateKeys();  // Method to generate RSA key pair
+    RSA* getPrivateKey();
+    float getBalance();
+    bool storeWalletData();
 };
 
 #endif // WALLET_H

@@ -3,7 +3,26 @@
 #include <QMessageBox>
 #include <QSqlError>
 #include <QDebug>
+#include <openssl/pem.h>
+QByteArray rsaPublicKeyToByteArrayPem(RSA* rsaKey) {
+    BIO* bio = BIO_new(BIO_s_mem());
+    if (!bio) return QByteArray();
 
+    // Use the appropriate OpenSSL function
+    if (PEM_write_bio_RSAPublicKey(bio, rsaKey) <= 0) {
+        BIO_free_all(bio);
+        return QByteArray();
+    }
+
+    size_t keyLen = BIO_pending(bio);
+    QByteArray byteArray(keyLen, '\0');
+    BIO_read(bio, byteArray.data(), keyLen);
+
+    BIO_free_all(bio);
+    byteArray = "'" + byteArray;
+    byteArray += "'";
+    return byteArray;
+}
 DataBaseMain::DataBaseMain(QObject *parent)
     : QObject{parent}
 {
@@ -48,8 +67,8 @@ bool DataBaseMain::CreateWalletsTable()
     sqlStatement = "CREATE TABLE IF NOT EXISTS ";
     sqlStatement += "Wallets ";
     sqlStatement += " (id INTEGER PRIMARY KEY NOT NULL, "
-                    "publicKey varchar(50) NOT NULL, "
-                    "privateKey varchar(100), "
+                    "publicKey varchar(500) NOT NULL, "
+                    "privateKey varchar(500), "
                     "balance decimal(6,2) , "
                     "activeStatus INTEGER CHECK (activeStatus BETWEEN 0 AND 1));";
     //qDebug() << "Statement: " << sqlStatement;
@@ -64,7 +83,29 @@ bool DataBaseMain::CreateWalletsTable()
     return true;
 }
 
-bool DataBaseMain::StoreNewWallet()
+bool DataBaseMain::StoreNewWallet(std::string ID , RSA* pubKey , RSA* PrivKey, float balanace)
 {
+    if(!bc_DB.open())
+        return false;
+    QSqlQuery query(bc_DB);
+    QString sqlStatement;
+    sqlStatement = "INSERT INTO Wallets (id , publicKey , privateKey , balance , activeStatus) VALUES ('";
+    sqlStatement += ID;
+    sqlStatement += "'";
+    sqlStatement += ",";
+    sqlStatement += QString::fromUtf8(rsaPublicKeyToByteArrayPem(pubKey));
+    sqlStatement += ",";
+    sqlStatement += QString::fromUtf8(rsaPublicKeyToByteArrayPem(PrivKey)) ;
+    sqlStatement += ",";
+    sqlStatement += QString::number(balanace) ;
+    sqlStatement += ",";
+    sqlStatement += "1";
+    sqlStatement += ");";
+    qDebug() << "Insert statement :" << sqlStatement;
+    if(!query.exec(sqlStatement)){
+        QString errorCode = query.lastError().text();
+        qDebug() << errorCode;
+        return false;
+    }
     return true;
 }

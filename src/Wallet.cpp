@@ -10,6 +10,7 @@
 
 Wallet::Wallet(std::string id) : id(id), balance(0.0f), publicKey(nullptr), privateKey(nullptr) {
     generateKeys();
+    storeWalletData();
 
 }
 
@@ -50,12 +51,28 @@ void Wallet::generateKeys() {
         publicKeyStr = (char*)malloc(keylen + 1);
 
         BIO_read(bio, publicKeyStr, keylen);
-        qDebug() << "publicKeyStr :" << publicKeyStr;
+        //qDebug() << "publicKeyStr :" << publicKeyStr;
         publicKeyStr[keylen] = 0;
         BIO_free_all(bio);
 
 
         free(publicKeyStr); // Don't forget to free allocated memory
+}
+
+RSA *Wallet::getPrivateKey()
+{
+    return privateKey;
+}
+
+float Wallet::getBalance()
+{
+    return balance;
+}
+
+bool Wallet::storeWalletData()
+{
+    DataBaseMain db;
+    db.StoreNewWallet(theID(), getPublicKey() , getPrivateKey() , getBalance());
 }
 
 // Method to send funds to another wallet
@@ -92,5 +109,15 @@ void Wallet::printWalletData() const {
     // such as displaying a simplified form of the public key, etc.
 
     // Note: be careful about logging sensitive information such as private keys.
+}
+
+std::string Wallet::theID()
+{
+    return id;
+}
+
+RSA *Wallet::getPublicKey()
+{
+    return publicKey;
 }
 
