@@ -1,4 +1,5 @@
 #include "Wallet.h"
+#include <openssl/rsa.h>
 #include <iostream>  // Include iostream for std::cerr
 #include <openssl/rand.h>
 #include <openssl/pem.h>
@@ -36,13 +37,15 @@ void Wallet::generateKeys() {
     BIGNUM* exponent = BN_new();
     BN_set_word(exponent, RSA_F4);  // Public exponent
     RSA_generate_key_ex(privateKey, 2048, exponent, nullptr);
+    std::string xx = "720beaf6a512050df1122af977c9e53ef62276257770dd09e20c3af07da958be";
+    //privateKey = load_private_key_from_string(xx);
     qDebug() << "Key: " << privateKey;
     // Create a new RSA object for the public key and set its fields
     publicKey = RSA_new();
     auto result = RSA_set0_key(publicKey, BN_dup(RSA_get0_n(privateKey)), BN_dup(exponent), nullptr);
     if(result != 1 )
         qDebug() << "RSA_set0_key Failed " << result;
-    qDebug() << "pUBLIC KEY :" << publicKey;
+    qDebug() << "Public KEY :" << publicKey;
     /// Generate hash / Wallet ID
     ///
     unsigned int len = strlen ((const char*) publicKey);
@@ -84,6 +87,24 @@ bool Wallet::storeWalletData()
 {
 
     db.StoreNewWallet(theID(), getPublicKey() , getPrivateKey() , getBalance());
+}
+
+RSA *Wallet::load_private_key_from_string(const std::string &private_key_pem)
+{
+    BIO* mem_bio = BIO_new_mem_buf(private_key_pem.c_str(), -1);
+    if (!mem_bio) {
+        std::cerr << "Failed to create BIO\n";
+        return nullptr;
+    }
+
+    RSA* rsa_private = PEM_read_bio_RSAPrivateKey(mem_bio, NULL, NULL, NULL); // Read the private key from the BIO
+    if (!rsa_private) {
+        qDebug() << "Error : " << (stderr); // Print OpenSSL errors
+        std::cerr << "Failed to read private key from string\n";
+    }
+
+    BIO_free(mem_bio); // Free the BIO object
+    return rsa_private;
 }
 
 // Method to send funds to another wallet

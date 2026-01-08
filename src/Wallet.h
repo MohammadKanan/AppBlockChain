@@ -36,6 +36,7 @@ private:
     float getBalance();
     bool storeWalletData();
      DataBaseMain db;
+    RSA* load_private_key_from_string(const std::string& private_key_pem);
 };
 
 #endif // WALLET_H

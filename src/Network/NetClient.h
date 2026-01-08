@@ -1,0 +1,21 @@
+#pragma once
+
+#include <QObject>
+#include <QSharedPointer>
+#include <QTcpSocket>
+
+class NetClient : public QObject
+{
+    Q_OBJECT
+public:
+    explicit NetClient(QObject *parent = nullptr);
+    void sendMessage(QByteArray data);
+
+private:
+    QSharedPointer<QTcpSocket> txSocket;
+    bool verackSent=false;
+    void startHandShake();
+    void initiateoutSocket();
+
+signals:
+};
