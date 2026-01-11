@@ -21,6 +21,7 @@ void NetClient::startHandShake()
     data += "55000000"; //Size
     data += "F7639C610"; // checksum
     data = "F9BEB4D976657273696F6E0000000000550000002C2F86F37E1101000000000000000000C515CF6100000000000000000000000000000000000000000000FFFF2E13894A208D000000000000000000000000000000000000FFFF7F000001208D00000000000000000000000000";
+    //             |                       |       |       |
     //QDataStream out(&data, QIODevice::WriteOnly);
     const auto data2 = QByteArray::fromHex(data);
     sendMessage(data2);
@@ -52,7 +53,7 @@ void NetClient::initiateoutSocket()
         qDebug() << "Socket error:" << txSocket->errorString();
     });
     //txSocket->connectToHost("172.5.222.129",8333); // 69.250.215.150 , 89.125.48.42 , 86.201.225.172
-    txSocket->connectToHost("86.201.225.172",8333); // 69.250.215.150 , 89.125.48.42 , 86.201.225.172
+    txSocket->connectToHost("82.57.211.36",8333); // 69.250.215.150 , 89.125.48.42 , 86.201.225.172
 
 }
 
